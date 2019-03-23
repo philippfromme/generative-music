@@ -6,19 +6,19 @@ export default class Scheduler {
       bpm,
       generator,
       instruments,
-      renderer
+      renderer,
     } = options;
 
     this.bpm = bpm;
 
     if (!generator) {
-      new Error('no generator found');
+      return new Error('no generator found');
     }
 
     this.generator = generator;
 
     if (!instruments || !instruments.length) {
-      new Error('no instruments found');
+      return new Error('no instruments found');
     }
 
     this.instruments = instruments;
@@ -50,19 +50,21 @@ export default class Scheduler {
     }
   }
 
-  scheduleEvent = ({ length, instrument, note, time, velocity }) => {
-      console.log(`schedule event for instrument ${ instrument } (note: ${ note }, length: ${ length }, velocity: ${ velocity }) at ${ time.toBarsBeatsSixteenths() }`);
+  scheduleEvent = ({
+    length, instrument, note, time, velocity,
+  }) => {
+    console.log(`schedule event for instrument ${instrument} (note: ${note}, length: ${length}, velocity: ${velocity}) at ${time.toBarsBeatsSixteenths()}`);
 
-      Tone.Transport.scheduleOnce((t) => {
+    Tone.Transport.scheduleOnce((t) => {
 
-        // note, duration, time, velocity
-        this.instruments[ instrument ].triggerAttackRelease(note, length, t, velocity);
+      // note, duration, time, velocity
+      this.instruments[instrument].triggerAttackRelease(note, length, t, velocity);
 
-        if (this.renderer) {
-          Tone.Draw.schedule(() => {
-            this.renderer.note(note, instrument);
-          }, t);
-        }
-      }, time);
-  }
+      if (this.renderer) {
+        Tone.Draw.schedule(() => {
+          this.renderer.note(note, instrument);
+        }, t);
+      }
+    }, time);
+  };
 }

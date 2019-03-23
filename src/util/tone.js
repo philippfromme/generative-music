@@ -16,7 +16,7 @@ export function parseBarsBeatsSixteenths(time) {
 }
 
 export function parseTime(bars, beats, sixteenths) {
-  return Tone.Time([ bars, beats, sixteenths].join(':'));
+  return new Tone.Time([bars, beats, sixteenths].join(':'));
 }
 
 export function getBars(time) {
@@ -41,14 +41,14 @@ export function getSixteenths(time) {
  */
 export function addTime(a, b) {
   if (!(a instanceof Tone.Time)) {
-    a = Tone.Time(a);
+    a = new Tone.Time(a);
   }
 
   if (!(b instanceof Tone.Time)) {
-    b = Tone.Time(b);
+    b = new Tone.Time(b);
   }
 
-  return Tone.Time(a.valueOf() + b.valueOf());
+  return new Tone.Time(a.valueOf() + b.valueOf());
 }
 
 /**
@@ -61,12 +61,12 @@ export function addTime(a, b) {
  */
 export function subtractTime(a, b) {
   if (!(a instanceof Tone.Time)) {
-    a = Tone.Time(a);
+    a = new Tone.Time(a);
   }
 
   if (!(b instanceof Tone.Time)) {
-    b = Tone.Time(b);
+    b = new Tone.Time(b);
   }
 
-  return Tone.Time(a.valueOf() - b.valueOf());
+  return new Tone.Time(a.valueOf() - b.valueOf());
 }

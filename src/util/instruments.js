@@ -2,7 +2,7 @@ import {
   FMSynth,
   PolySynth,
   Synth,
-  Sampler
+  Sampler,
 } from 'tone';
 
 export function createFMSynth() {
@@ -18,7 +18,7 @@ export function createFMSynth() {
       attack: 0.1,
       decay: 0.01,
       sustain: 0.9,
-      release: 1.5
+      release: 1.5,
     },
     // modulation: {
     //  type: new Tone.Synth()
@@ -27,24 +27,24 @@ export function createFMSynth() {
       attack: 0.5,
       decay: 0,
       sustain: 1,
-      release: 0.5
-    }
+      release: 0.5,
+    },
   });
 }
 
 const SYNTH_PRESETS = {
   xylophone: {
-		portamento: 0,
-		oscillator: {
-			type: "sine"
-		},
-		envelope: {
-			attack: .001,
-			decay: 0.1,
-			sustain: 0.2,
-			release: 1.2
-		}
-	}
+    portamento: 0,
+    oscillator: {
+      type: 'sine',
+    },
+    envelope: {
+      attack: 0.001,
+      decay: 0.1,
+      sustain: 0.2,
+      release: 1.2,
+    },
+  },
 };
 
 export function createSynth() {
@@ -56,39 +56,39 @@ export function createPolySynth() {
     polyphony: 16,
     volume: 0,
     detune: 0,
-    voice: createSynth
+    voice: createSynth,
   });
 }
 
 const OCTAVES = {
-  piano: [ '1', '2', '3', '4', '5' ],
-  'violin-harmonics': [ '3', '4', '5' ],
-  'violin-staccato': [ '3', '4', '5' ],
-  'bass-harmonics': [ '1', '2', '3' ],
-  'bass-staccato': [ '1', '2', '3' ]
+  piano: ['1', '2', '3', '4', '5'],
+  'violin-harmonics': ['3', '4', '5'],
+  'violin-staccato': ['3', '4', '5'],
+  'bass-harmonics': ['1', '2', '3'],
+  'bass-staccato': ['1', '2', '3'],
 };
 
 export async function createSampler(preset = 'piano') {
-  const notes = [ 'C', 'D#', 'F#', 'A' ],
-        octaves = OCTAVES[ preset ];
+  const notes = ['C', 'D#', 'F#', 'A'];
+  const octaves = OCTAVES[preset];
 
   let samples = {};
 
-  notes.forEach(note => {
-    octaves.forEach(octave => {
+  notes.forEach((note) => {
+    octaves.forEach((octave) => {
       samples = {
         ...samples,
-        [ `${note}${octave}` ]: `samples/${preset}/${note.replace('#', 'sharp')}${octave}.mp3`
+        [`${note}${octave}`]: `samples/${preset}/${note.replace('#', 'sharp')}${octave}.mp3`,
       };
     });
   });
 
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     const sampler = new Sampler(samples, {
       release: 1,
       onload: () => {
         resolve(sampler);
-      }
+      },
     });
-  })
+  });
 }

@@ -2,13 +2,12 @@
  * Generator superclass.
  */
 export default class Generator {
-
   /**
    * All generators must implement this method.
    *
-   * @returns {Array<Tone.Event>|Array<Array>}
+   * @returns {Array<Object>}
    */
   nextBar() {
-    new Error('needs override');
+    return new Error('needs override');
   }
 }

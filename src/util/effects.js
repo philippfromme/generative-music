@@ -1,9 +1,9 @@
 import Tone from 'tone';
 
 export async function createReverb() {
-  const reverb = new Tone.Reverb ({
+  const reverb = new Tone.Reverb({
     decay: 7.5,
-    preDelay: 0.1
+    preDelay: 0.1,
   });
 
   reverb.wet.value = 0.7;
@@ -26,7 +26,7 @@ export function createMultiband() {
     lowFrequency: 200,
     highFrequency: 1300,
     low: {
-      threshold: -12
-    }
+      threshold: -12,
+    },
   });
 }

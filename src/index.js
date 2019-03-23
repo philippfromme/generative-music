@@ -5,7 +5,7 @@ import { createSampler } from './util/instruments';
 import {
   createDelay,
   createMultiband,
-  createReverb
+  createReverb,
 } from './util/effects';
 
 import Scheduler from './Scheduler';
@@ -16,37 +16,20 @@ import Renderer from './Renderer';
 const getElementById = document.getElementById.bind(document);
 
 async function sleep(ms = 100) {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
 }
 
-const buttonEnableAudio = getElementById('button-enable-audio'),
-      buttonInfo = getElementById('button-info'),
-      buttonPlayPause = getElementById('button-play-pause');
+const buttonEnableAudio = getElementById('button-enable-audio');
+const buttonInfo = getElementById('button-info');
+const buttonPlayPause = getElementById('button-play-pause');
 
-const info = getElementById('info'),
-      loader = getElementById('loader');
-
-buttonEnableAudio.addEventListener('click', async () => {
-  buttonEnableAudio.classList.add('hidden');
-
-  await sleep(500);
-
-  loader.classList.remove('hidden');
-
-  const result = await initTone();
-
-  const {
-    renderer,
-    scheduler
-  } = result;
-
-  initControls(scheduler, renderer);
-});
+const info = getElementById('info');
+const loader = getElementById('loader');
 
 async function initTone() {
-  Tone.context.resume()
+  Tone.context.resume();
 
   // create effects
   const delay = createDelay();
@@ -80,14 +63,14 @@ async function initTone() {
     instruments: [
       violinHarmonics,
       bassHarmonics,
-      violinStaccato
+      violinStaccato,
     ],
-    renderer
+    renderer,
   });
 
   return {
     renderer,
-    scheduler
+    scheduler,
   };
 }
 
@@ -109,14 +92,14 @@ async function initControls(scheduler, renderer) {
     }
   });
 
-  buttonInfo.addEventListener('click', event => {
+  buttonInfo.addEventListener('click', (event) => {
     info.classList.remove('hidden');
 
     buttonInfo.classList.add('inactive');
     buttonPlayPause.classList.add('inactive');
 
-    function hideInfo(event) {
-      if (event.target === info || info.contains(event.target)) {
+    function hideInfo(e) {
+      if (e.target === info || info.contains(e.target)) {
         return;
       }
 
@@ -148,3 +131,20 @@ async function initControls(scheduler, renderer) {
   buttonPlayPause.classList.remove('inactive');
   buttonPlayPause.classList.add('animation-pulse');
 }
+
+buttonEnableAudio.addEventListener('click', async () => {
+  buttonEnableAudio.classList.add('hidden');
+
+  await sleep(500);
+
+  loader.classList.remove('hidden');
+
+  const result = await initTone();
+
+  const {
+    renderer,
+    scheduler,
+  } = result;
+
+  initControls(scheduler, renderer);
+});

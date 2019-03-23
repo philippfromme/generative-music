@@ -13,7 +13,7 @@ export function randomInteger(min, max) {
 }
 
 export function randomChoice(choices) {
-  return choices[ randomInteger(choices.length - 1) ];
+  return choices[randomInteger(choices.length - 1)];
 }
 
 export function chance(probability) {

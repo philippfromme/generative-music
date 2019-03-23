@@ -1,18 +1,22 @@
 import { midi } from 'tonal';
 
+function map(value, inMin, inMax, outMin, outMax) {
+  return (value - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
+}
+
 export default class Renderer {
-  constructor(options = {}) {
+  constructor() {
     this.running = false;
 
     this.notes = [];
 
-    const canvas = this.canvas = document.createElement('canvas');
+    this.canvas = document.createElement('canvas');
 
-    this.ctx = canvas.getContext('2d');
+    this.ctx = this.canvas.getContext('2d');
 
     this.resize();
 
-    document.body.appendChild(canvas);
+    document.body.appendChild(this.canvas);
 
     window.addEventListener('resize', this.resize);
   }
@@ -20,10 +24,10 @@ export default class Renderer {
   resize = () => {
     this.canvas.width = window.innerWidth;
     this.canvas.height = window.innerHeight;
-  }
+  };
 
   start() {
-    if(this.running) {
+    if (this.running) {
       return;
     }
 
@@ -34,8 +38,10 @@ export default class Renderer {
 
       this.render();
 
-      this.running && requestAnimationFrame(run);
-    }
+      if (this.running) {
+        requestAnimationFrame(run);
+      }
+    };
 
     run();
   }
@@ -50,12 +56,12 @@ export default class Renderer {
     this.notes.push({
       x: -this.canvas.height * 1.5,
       y,
-      instrument
+      instrument,
     });
   }
 
   update() {
-    this.notes.forEach(note => {
+    this.notes.forEach((note) => {
       note.x += 2;
     });
   }
@@ -63,7 +69,7 @@ export default class Renderer {
   render() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    this.notes.forEach(note => {
+    this.notes.forEach((note) => {
       this.renderNote(note);
     });
   }
@@ -72,9 +78,9 @@ export default class Renderer {
     const alpha = map(note.x, 0, this.canvas.width / 3 * 2, 1, 0);
 
     if (note.instrument > 0) {
-      this.ctx.fillStyle = `rgba(209, 0, 41, ${ alpha })`;
+      this.ctx.fillStyle = `rgba(209, 0, 41, ${alpha})`;
     } else {
-      this.ctx.fillStyle = `rgba(230, 175, 46, ${ alpha })`;
+      this.ctx.fillStyle = `rgba(230, 175, 46, ${alpha})`;
     }
 
     this.ctx.lineWidth = 0;
@@ -85,9 +91,4 @@ export default class Renderer {
     this.ctx.arc(note.x, note.y, Math.max(0, radius), 0, 360);
     this.ctx.fill();
   }
-}
-
-
-function map(value, in_min, in_max, out_min, out_max) {
-  return (value - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
