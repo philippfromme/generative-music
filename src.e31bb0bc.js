@@ -175,10 +175,10 @@ const SYNTH_PRESETS = {
   xylophone: {
     portamento: 0,
     oscillator: {
-      type: "sine"
+      type: 'sine'
     },
     envelope: {
-      attack: .001,
+      attack: 0.001,
       decay: 0.1,
       sustain: 0.2,
       release: 1.2
@@ -208,8 +208,8 @@ const OCTAVES = {
 };
 
 async function createSampler(preset = 'piano') {
-  const notes = ['C', 'D#', 'F#', 'A'],
-        octaves = OCTAVES[preset];
+  const notes = ['C', 'D#', 'F#', 'A'];
+  const octaves = OCTAVES[preset];
   let samples = {};
   notes.forEach(note => {
     octaves.forEach(octave => {
@@ -312,13 +312,13 @@ class Scheduler {
     this.bpm = bpm;
 
     if (!generator) {
-      new Error('no generator found');
+      return new Error('no generator found');
     }
 
     this.generator = generator;
 
     if (!instruments || !instruments.length) {
-      new Error('no instruments found');
+      return new Error('no instruments found');
     }
 
     this.instruments = instruments;
@@ -2651,10 +2651,10 @@ class Generator {
   /**
    * All generators must implement this method.
    *
-   * @returns {Array<Tone.Event>|Array<Array>}
+   * @returns {Array<Object>}
    */
   nextBar() {
-    new Error('needs override');
+    return new Error('needs override');
   }
 
 }
@@ -21876,7 +21876,7 @@ function parseBarsBeatsSixteenths(time) {
 }
 
 function parseTime(bars, beats, sixteenths) {
-  return _tone.default.Time([bars, beats, sixteenths].join(':'));
+  return new _tone.default.Time([bars, beats, sixteenths].join(':'));
 }
 
 function getBars(time) {
@@ -21902,14 +21902,14 @@ function getSixteenths(time) {
 
 function addTime(a, b) {
   if (!(a instanceof _tone.default.Time)) {
-    a = _tone.default.Time(a);
+    a = new _tone.default.Time(a);
   }
 
   if (!(b instanceof _tone.default.Time)) {
-    b = _tone.default.Time(b);
+    b = new _tone.default.Time(b);
   }
 
-  return _tone.default.Time(a.valueOf() + b.valueOf());
+  return new _tone.default.Time(a.valueOf() + b.valueOf());
 }
 /**
  * Subtract time from another.
@@ -21923,14 +21923,14 @@ function addTime(a, b) {
 
 function subtractTime(a, b) {
   if (!(a instanceof _tone.default.Time)) {
-    a = _tone.default.Time(a);
+    a = new _tone.default.Time(a);
   }
 
   if (!(b instanceof _tone.default.Time)) {
-    b = _tone.default.Time(b);
+    b = new _tone.default.Time(b);
   }
 
-  return _tone.default.Time(a.valueOf() - b.valueOf());
+  return new _tone.default.Time(a.valueOf() - b.valueOf());
 }
 },{"tone":"../node_modules/tone/build/Tone.js"}],"../node_modules/tonal-range/build/es6.js":[function(require,module,exports) {
 "use strict";
@@ -22070,8 +22070,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.randomNote = randomNote;
 
-var _tonal = require("tonal");
-
 var Range = _interopRequireWildcard(require("tonal-range"));
 
 var _random = require("./random");
@@ -22080,13 +22078,13 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function randomNote(lowest = 'C3', highest = 'B5') {
   if (lowest && !highest) {
-    new Error('highest note required');
+    return new Error('highest note required');
   }
 
   const notes = Range.chromatic([lowest, highest]);
   return (0, _random.randomChoice)(notes);
 }
-},{"tonal":"../node_modules/tonal/index.js","tonal-range":"../node_modules/tonal-range/build/es6.js","./random":"util/random.js"}],"generators/SimpleGenerator.js":[function(require,module,exports) {
+},{"tonal-range":"../node_modules/tonal-range/build/es6.js","./random":"util/random.js"}],"generators/SimpleGenerator.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -22094,28 +22092,28 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
-var _tone = _interopRequireDefault(require("tone"));
-
 var _tonal = require("tonal");
 
 var _Generator = _interopRequireDefault(require("./Generator"));
 
 var _random = require("../util/random");
 
-var _tone2 = require("../util/tone");
+var _tone = require("../util/tone");
 
 var _tonal2 = require("../util/tonal");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function shuffle(array) {
+  return array.sort(() => 0.5 - Math.random());
+}
 
 class SimpleGenerator extends _Generator.default {
   constructor() {
     super();
     this.key = (0, _tonal2.randomNote)('C2', 'B2');
     this.notes = (0, _tonal.scale)('minor').map((0, _tonal.transpose)(this.key));
-    this.chords = this.notes.map(note => {
-      return _tonal.Chord.notes(note);
-    });
+    this.chords = this.notes.map(note => _tonal.Chord.notes(note));
     this.lastChord = null;
     this.events = [];
     this.bars = 0;
@@ -22123,7 +22121,7 @@ class SimpleGenerator extends _Generator.default {
   /**
    * Return next bar.
    *
-   * @returns {Array<Tone.Event>|Array<Array>}
+   * @returns {Array<Object>}
    */
 
 
@@ -22141,24 +22139,24 @@ class SimpleGenerator extends _Generator.default {
       instrument: 0,
       length: '2n',
       note: chord[0],
-      time: (0, _tone2.parseTime)(this.bars, 0, 0),
+      time: (0, _tone.parseTime)(this.bars, 0, 0),
       velocity: (0, _random.randomInteger)(10) / 12.5
     }, {
       instrument: 0,
       length: '2n',
       note: chord[(0, _random.randomInteger)(2)],
-      time: (0, _tone2.parseTime)(this.bars, 1, 2),
+      time: (0, _tone.parseTime)(this.bars, 1, 2),
       velocity: (0, _random.randomInteger)(10) / 12.5
     }, {
       instrument: 0,
       length: '2n',
       note: chord[2],
-      time: (0, _tone2.parseTime)(this.bars, 2, 4),
+      time: (0, _tone.parseTime)(this.bars, 2, 4),
       velocity: (0, _random.randomInteger)(10) / 12.5
     }];
 
     if ((0, _random.chance)(0.4)) {
-      const time = (0, _tone2.parseTime)(this.bars, (0, _random.randomChoice)([0, 2]), 0);
+      const time = (0, _tone.parseTime)(this.bars, (0, _random.randomChoice)([0, 2]), 0);
       events.push({
         instrument: 1,
         length: '2n',
@@ -22169,7 +22167,7 @@ class SimpleGenerator extends _Generator.default {
     }
 
     if ((0, _random.chance)(0.2)) {
-      const time = (0, _tone2.parseTime)(this.bars, 2, 2);
+      const time = (0, _tone.parseTime)(this.bars, 2, 2);
       events.push({
         instrument: 2,
         length: '1n',
@@ -22180,17 +22178,19 @@ class SimpleGenerator extends _Generator.default {
     }
 
     this.bars++;
+
+    if ((0, _random.chance)(0.1)) {
+      // skip a bar
+      return [];
+    }
+
     return events;
   }
 
 }
 
 exports.default = SimpleGenerator;
-
-function shuffle(array) {
-  return array.sort(() => 0.5 - Math.random());
-}
-},{"tone":"../node_modules/tone/build/Tone.js","tonal":"../node_modules/tonal/index.js","./Generator":"generators/Generator.js","../util/random":"util/random.js","../util/tone":"util/tone.js","../util/tonal":"util/tonal.js"}],"Renderer.js":[function(require,module,exports) {
+},{"tonal":"../node_modules/tonal/index.js","./Generator":"generators/Generator.js","../util/random":"util/random.js","../util/tone":"util/tone.js","../util/tonal":"util/tonal.js"}],"Renderer.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -22202,8 +22202,14 @@ var _tonal = require("tonal");
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
+function map(value, inMin, inMax, outMin, outMax) {
+  return (value - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
+}
+
+const MAX_PROGRESS = 750;
+
 class Renderer {
-  constructor(options = {}) {
+  constructor() {
     _defineProperty(this, "resize", () => {
       this.canvas.width = window.innerWidth;
       this.canvas.height = window.innerHeight;
@@ -22211,10 +22217,10 @@ class Renderer {
 
     this.running = false;
     this.notes = [];
-    const canvas = this.canvas = document.createElement('canvas');
-    this.ctx = canvas.getContext('2d');
+    this.canvas = document.createElement('canvas');
+    this.ctx = this.canvas.getContext('2d');
     this.resize();
-    document.body.appendChild(canvas);
+    document.body.appendChild(this.canvas);
     window.addEventListener('resize', this.resize);
   }
 
@@ -22228,7 +22234,10 @@ class Renderer {
     const run = () => {
       this.update();
       this.render();
-      this.running && requestAnimationFrame(run);
+
+      if (this.running) {
+        requestAnimationFrame(run);
+      }
     };
 
     run();
@@ -22239,18 +22248,23 @@ class Renderer {
   }
 
   note(note, instrument = 0) {
-    const y = map((0, _tonal.midi)(note), 0, 127, this.canvas.height, 0);
     this.notes.push({
-      x: -this.canvas.height * 1.5,
-      y,
+      progress: 0,
+      midi: (0, _tonal.midi)(note),
       instrument
     });
   }
 
   update() {
+    const remove = [];
     this.notes.forEach(note => {
-      note.x += 2;
+      note.progress++;
+
+      if (note.progress > MAX_PROGRESS) {
+        remove.push(note);
+      }
     });
+    this.notes = this.notes.filter(note => !remove.includes(note));
   }
 
   render() {
@@ -22261,7 +22275,7 @@ class Renderer {
   }
 
   renderNote(note) {
-    const alpha = map(note.x, 0, this.canvas.width / 3 * 2, 1, 0);
+    const alpha = map(note.progress, 0, MAX_PROGRESS - MAX_PROGRESS / 5, 1, 0);
 
     if (note.instrument > 0) {
       this.ctx.fillStyle = `rgba(209, 0, 41, ${alpha})`;
@@ -22269,20 +22283,18 @@ class Renderer {
       this.ctx.fillStyle = `rgba(230, 175, 46, ${alpha})`;
     }
 
-    this.ctx.lineWidth = 0;
-    const radius = map(note.x, 0, this.canvas.width, this.canvas.height, this.canvas.height / 2);
+    const x = map(note.progress, 0, MAX_PROGRESS, -this.canvas.height, this.canvas.width);
+    const y = map(note.midi, 0, 127, 0, this.canvas.height);
+    const radius = map(note.progress, 0, this.canvas.width, this.canvas.height, this.canvas.height / 2); // console.log(x, y, radius);
+
     this.ctx.beginPath();
-    this.ctx.arc(note.x, note.y, Math.max(0, radius), 0, 360);
+    this.ctx.arc(x, y, Math.max(0, radius), 0, 360);
     this.ctx.fill();
   }
 
 }
 
 exports.default = Renderer;
-
-function map(value, in_min, in_max, out_min, out_max) {
-  return (value - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
-}
 },{"tonal":"../node_modules/tonal/index.js"}],"index.js":[function(require,module,exports) {
 "use strict";
 
@@ -22308,22 +22320,11 @@ async function sleep(ms = 100) {
   });
 }
 
-const buttonEnableAudio = getElementById('button-enable-audio'),
-      buttonInfo = getElementById('button-info'),
-      buttonPlayPause = getElementById('button-play-pause');
-const info = getElementById('info'),
-      loader = getElementById('loader');
-buttonEnableAudio.addEventListener('click', async () => {
-  buttonEnableAudio.classList.add('hidden');
-  await sleep(500);
-  loader.classList.remove('hidden');
-  const result = await initTone();
-  const {
-    renderer,
-    scheduler
-  } = result;
-  initControls(scheduler, renderer);
-});
+const buttonEnableAudio = getElementById('button-enable-audio');
+const buttonInfo = getElementById('button-info');
+const buttonPlayPause = getElementById('button-play-pause');
+const info = getElementById('info');
+const loader = getElementById('loader');
 
 async function initTone() {
   _tone.default.context.resume(); // create effects
@@ -22378,8 +22379,8 @@ async function initControls(scheduler, renderer) {
     buttonInfo.classList.add('inactive');
     buttonPlayPause.classList.add('inactive');
 
-    function hideInfo(event) {
-      if (event.target === info || info.contains(event.target)) {
+    function hideInfo(e) {
+      if (e.target === info || info.contains(e.target)) {
         return;
       }
 
@@ -22402,6 +22403,18 @@ async function initControls(scheduler, renderer) {
   buttonPlayPause.classList.remove('inactive');
   buttonPlayPause.classList.add('animation-pulse');
 }
+
+buttonEnableAudio.addEventListener('click', async () => {
+  buttonEnableAudio.classList.add('hidden');
+  await sleep(500);
+  loader.classList.remove('hidden');
+  const result = await initTone();
+  const {
+    renderer,
+    scheduler
+  } = result;
+  initControls(scheduler, renderer);
+});
 },{"tone":"../node_modules/tone/build/Tone.js","./util/instruments":"util/instruments.js","./util/effects":"util/effects.js","./Scheduler":"Scheduler.js","./generators/SimpleGenerator":"generators/SimpleGenerator.js","./Renderer":"Renderer.js"}],"../../../Users/phili/AppData/Roaming/nvm/v10.13.0/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -22430,7 +22443,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "58149" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "63785" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
