@@ -103,6 +103,12 @@ export default class SimpleGenerator extends Generator {
 
     this.bars++;
 
+    if (chance(0.1)) {
+
+      // skip a bar
+      return [];
+    }
+
     return events;
   }
 }

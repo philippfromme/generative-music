@@ -4,6 +4,8 @@ function map(value, inMin, inMax, outMin, outMax) {
   return (value - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
 }
 
+const MAX_PROGRESS = 750;
+
 export default class Renderer {
   constructor() {
     this.running = false;
@@ -51,19 +53,25 @@ export default class Renderer {
   }
 
   note(note, instrument = 0) {
-    const y = map(midi(note), 0, 127, this.canvas.height, 0);
-
     this.notes.push({
-      x: -this.canvas.height * 1.5,
-      y,
+      progress: 0,
+      midi: midi(note),
       instrument,
     });
   }
 
   update() {
+    const remove = [];
+
     this.notes.forEach((note) => {
-      note.x += 2;
+      note.progress++;
+
+      if (note.progress > MAX_PROGRESS) {
+        remove.push(note);
+      }
     });
+
+    this.notes = this.notes.filter(note => !remove.includes(note));
   }
 
   render() {
@@ -75,7 +83,7 @@ export default class Renderer {
   }
 
   renderNote(note) {
-    const alpha = map(note.x, 0, this.canvas.width / 3 * 2, 1, 0);
+    const alpha = map(note.progress, 0, MAX_PROGRESS - (MAX_PROGRESS / 5), 1, 0);
 
     if (note.instrument > 0) {
       this.ctx.fillStyle = `rgba(209, 0, 41, ${alpha})`;
@@ -83,12 +91,22 @@ export default class Renderer {
       this.ctx.fillStyle = `rgba(230, 175, 46, ${alpha})`;
     }
 
-    this.ctx.lineWidth = 0;
+    const x = map(note.progress, 0, MAX_PROGRESS, -this.canvas.height, this.canvas.width);
 
-    const radius = map(note.x, 0, this.canvas.width, this.canvas.height, this.canvas.height / 2);
+    const y = map(note.midi, 0, 127, 0, this.canvas.height);
+
+    const radius = map(
+      note.progress,
+      0,
+      this.canvas.width,
+      this.canvas.height,
+      this.canvas.height / 2,
+    );
+
+    // console.log(x, y, radius);
 
     this.ctx.beginPath();
-    this.ctx.arc(note.x, note.y, Math.max(0, radius), 0, 360);
+    this.ctx.arc(x, y, Math.max(0, radius), 0, 360);
     this.ctx.fill();
   }
 }

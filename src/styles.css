@@ -161,34 +161,16 @@ html, body {
 .animation-pulse {
   animation-name: animation-pulse;
   animation-fill-mode: both;
-}
-
-.animation-short {
   animation-duration: 1s;
 }
 
-.animation-long {
-  animation-duration: 8s;
-}
-
 @keyframes animation-pulse {
-  from,
-  to {
-    transform: scale(1);
-  }
 
-  10%,
-  30%,
-  50%,
-  70%,
-  90% {
+  50% {
     transform: scale(1.1);
   }
 
-  20%,
-  40%,
-  60%,
-  80% {
+  100% {
     transform: scale(1);
   }
 }
