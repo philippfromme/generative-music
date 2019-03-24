@@ -47,20 +47,37 @@ async function initTone() {
   if (process.env.NODE_ENV === 'development') {
 
     // setup debugging
-    const meter = initDebug();
+    const meter = initDebug({
+      listeners: [
+        {
+          onChange: (value) => {
+            delay.wet.value = value;
+          },
+          initialValue: delay.wet.value,
+        },
+        {
+          onChange: (value) => {
+            reverb.wet.value = value;
+          },
+          initialValue: reverb.wet.value,
+        },
+      ],
+    });
+
     compressor.fan(Tone.Master, meter);
   } else {
     compressor.connect(Tone.Master);
   }
 
   // create instruments
-  const violinHarmonics = await createSampler('violin-harmonics');
-  violinHarmonics.connect(delay);
+  const violinHarmonics = await createSampler('piano');
+  const filter = new Tone.Filter(1000, 'lowpass');
+  violinHarmonics.chain(filter, delay);
 
-  const violinStaccato = await createSampler('violin-staccato');
+  const violinStaccato = await createSampler('violin-harmonics');
   violinStaccato.connect(delay);
 
-  const bassHarmonics = await createSampler('bass-harmonics');
+  const bassHarmonics = await createSampler('bass-staccato');
   bassHarmonics.connect(delay);
 
   // create generator

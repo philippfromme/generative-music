@@ -18,6 +18,8 @@ module.exports = {
     "no-plusplus": "off",
     "padded-blocks": "off",
     "import/prefer-default-export": "off",
+    "prefer-const": "off",
+    "prefer-destructuring": "off",
 
     "babel/new-cap": 1,
     "babel/camelcase": 1,

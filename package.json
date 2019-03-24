@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "all": "npm run assets && npm run build",
+    "all": "npm run assets && npm run build && npm run deploy",
     "start": "parcel src/index.html --no-cache --no-hmr --open",
     "build": "parcel build src/index.html --no-cache --public-url ./",
     "assets": "cp -r assets/* dist",

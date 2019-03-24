@@ -106,7 +106,7 @@ export default class Renderer {
     // console.log(x, y, radius);
 
     this.ctx.beginPath();
-    this.ctx.arc(x, y, Math.max(0, radius), 0, 360);
+    this.ctx.arc(x, this.canvas.height - y, Math.max(0, radius), 0, 360);
     this.ctx.fill();
   }
 }
