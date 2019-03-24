@@ -299,7 +299,71 @@ function map(value, inMin, inMax, outMin, outMax) {
   return (value - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
 }
 
-function initDebug() {
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function px(value) {
+  return `${value}px`;
+}
+
+function createSlider(options = {}) {
+  let {
+    width,
+    height,
+    onChange,
+    initialValue
+  } = options;
+  width = width || 20;
+  height = height || 120;
+  initialValue = initialValue || 0.5;
+  const initialHeight = map(initialValue, 0, 1, 0, height);
+  const outer = document.createElement('div');
+  outer.classList.add('slider-outer');
+  outer.style.width = px(width);
+  outer.style.height = px(height);
+  const inner = document.createElement('div');
+  inner.classList.add('slider-inner');
+  inner.style.width = px(width);
+  inner.style.height = px(initialHeight);
+  outer.appendChild(inner);
+  let clientY;
+  let lastHeight = initialHeight;
+
+  function onMousemove(event) {
+    const deltaY = event.clientY - clientY;
+    const newHeight = clamp(lastHeight - deltaY, 0, height);
+    inner.style.height = px(newHeight);
+
+    if (onChange) {
+      onChange(map(newHeight, 0, height, 0, 1));
+    }
+  }
+
+  function onMouseup() {
+    window.removeEventListener('mousemove', onMousemove);
+    window.removeEventListener('mouseup', onMouseup);
+  }
+
+  outer.addEventListener('mousedown', event => {
+    clientY = event.clientY;
+    window.addEventListener('mousemove', onMousemove);
+    window.addEventListener('mouseup', onMouseup);
+
+    if (onChange) {
+      const {
+        bottom
+      } = outer.getBoundingClientRect();
+      const newHeight = bottom - clientY;
+      inner.style.height = px(newHeight);
+      lastHeight = newHeight;
+      onChange(map(newHeight, 0, height, 0, 1));
+    }
+  });
+  return outer;
+}
+
+function initDebug(options = {}) {
   const meter = new _tone.default.Meter(0.9);
   const canvas = document.createElement('canvas');
   canvas.id = 'debug-meter';
@@ -318,6 +382,26 @@ function initDebug() {
   }
 
   render();
+  const {
+    listeners
+  } = options;
+
+  if (listeners && listeners.length) {
+    const sliders = document.createElement('div');
+    sliders.id = 'sliders';
+    document.body.appendChild(sliders);
+    listeners.forEach(({
+      initialValue,
+      onChange
+    }) => {
+      const slider = createSlider({
+        initialValue,
+        onChange
+      });
+      sliders.appendChild(slider);
+    });
+  }
+
   return meter;
 }
 },{"tone":"../node_modules/tone/build/Tone.js"}],"Scheduler.js":[function(require,module,exports) {
@@ -22344,7 +22428,7 @@ class Renderer {
     const radius = map(note.progress, 0, this.canvas.width, this.canvas.height, this.canvas.height / 2); // console.log(x, y, radius);
 
     this.ctx.beginPath();
-    this.ctx.arc(x, y, Math.max(0, radius), 0, 360);
+    this.ctx.arc(x, this.canvas.height - y, Math.max(0, radius), 0, 360);
     this.ctx.fill();
   }
 
@@ -22396,18 +22480,31 @@ async function initTone() {
 
   if ("development" === 'development') {
     // setup debugging
-    const meter = (0, _debug.initDebug)();
+    const meter = (0, _debug.initDebug)({
+      listeners: [{
+        onChange: value => {
+          delay.wet.value = value;
+        },
+        initialValue: delay.wet.value
+      }, {
+        onChange: value => {
+          reverb.wet.value = value;
+        },
+        initialValue: reverb.wet.value
+      }]
+    });
     compressor.fan(_tone.default.Master, meter);
   } else {
     compressor.connect(_tone.default.Master);
   } // create instruments
 
 
-  const violinHarmonics = await (0, _instruments.createSampler)('violin-harmonics');
-  violinHarmonics.connect(delay);
-  const violinStaccato = await (0, _instruments.createSampler)('violin-staccato');
+  const violinHarmonics = await (0, _instruments.createSampler)('piano');
+  const filter = new _tone.default.Filter(1000, 'lowpass');
+  violinHarmonics.chain(filter, delay);
+  const violinStaccato = await (0, _instruments.createSampler)('violin-harmonics');
   violinStaccato.connect(delay);
-  const bassHarmonics = await (0, _instruments.createSampler)('bass-harmonics');
+  const bassHarmonics = await (0, _instruments.createSampler)('bass-staccato');
   bassHarmonics.connect(delay); // create generator
 
   const generator = new _SimpleGenerator.default(); // create renderer
