@@ -179,4 +179,13 @@ html, body {
   animation-iteration-count: infinite;
 }
 
+/* Debug */
+#debug-meter {
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 3px;
+  bottom: 20px;
+  position: absolute;
+  right: 20px;
+}
+
 /*# sourceMappingURL=/styles.8986bff4.css.map */

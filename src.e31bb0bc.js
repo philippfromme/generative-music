@@ -236,6 +236,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.createReverb = createReverb;
 exports.createDelay = createDelay;
 exports.createMultiband = createMultiband;
+exports.createCompressor = createCompressor;
 
 var _tone = _interopRequireDefault(require("tone"));
 
@@ -263,8 +264,61 @@ function createMultiband() {
     highFrequency: 1300,
     low: {
       threshold: -12
+    },
+    mid: {
+      threshold: -12
+    },
+    high: {
+      threshold: -12
     }
   });
+}
+
+function createCompressor() {
+  return new _tone.default.Compressor({
+    ratio: 10,
+    threshold: -24,
+    release: 0.05,
+    attack: 0.005,
+    knee: 6
+  });
+}
+},{"tone":"../node_modules/tone/build/Tone.js"}],"debug.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.initDebug = initDebug;
+
+var _tone = _interopRequireDefault(require("tone"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function map(value, inMin, inMax, outMin, outMax) {
+  return (value - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
+}
+
+function initDebug() {
+  const meter = new _tone.default.Meter(0.9);
+  const canvas = document.createElement('canvas');
+  canvas.id = 'debug-meter';
+  canvas.width = 20;
+  canvas.height = 120;
+  document.body.appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#fff';
+
+  function render() {
+    const level = Math.max(-36, meter.getLevel());
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const height = map(level, -36, 0, 0, canvas.height);
+    ctx.fillRect(0, canvas.height - height, canvas.width, height);
+    requestAnimationFrame(render);
+  }
+
+  render();
+  return meter;
 }
 },{"tone":"../node_modules/tone/build/Tone.js"}],"Scheduler.js":[function(require,module,exports) {
 "use strict";
@@ -289,10 +343,12 @@ class Scheduler {
       time,
       velocity
     }) => {
-      console.log(`schedule event for instrument ${instrument} (note: ${note}, length: ${length}, velocity: ${velocity}) at ${time.toBarsBeatsSixteenths()}`);
-
       _tone.default.Transport.scheduleOnce(t => {
-        // note, duration, time, velocity
+        if ("development" === 'development') {
+          console.log(`[instrument ${instrument}] note: ${note}, length: ${length}, velocity: ${velocity}`);
+        } // note, duration, time, velocity
+
+
         this.instruments[instrument].triggerAttackRelease(note, length, t, velocity);
 
         if (this.renderer) {
@@ -22304,6 +22360,8 @@ var _instruments = require("./util/instruments");
 
 var _effects = require("./util/effects");
 
+var _debug = require("./debug");
+
 var _Scheduler = _interopRequireDefault(require("./Scheduler"));
 
 var _SimpleGenerator = _interopRequireDefault(require("./generators/SimpleGenerator"));
@@ -22332,8 +22390,18 @@ async function initTone() {
 
   const delay = (0, _effects.createDelay)();
   const reverb = await (0, _effects.createReverb)();
-  const multiband = (0, _effects.createMultiband)();
-  delay.chain(reverb, multiband, _tone.default.Master); // create instruments
+  const compressor = (0, _effects.createCompressor)();
+  const gain = new _tone.default.Gain(12, _tone.default.Type.Decibel);
+  delay.chain(reverb, gain, compressor);
+
+  if ("development" === 'development') {
+    // setup debugging
+    const meter = (0, _debug.initDebug)();
+    compressor.fan(_tone.default.Master, meter);
+  } else {
+    compressor.connect(_tone.default.Master);
+  } // create instruments
+
 
   const violinHarmonics = await (0, _instruments.createSampler)('violin-harmonics');
   violinHarmonics.connect(delay);
@@ -22415,208 +22483,5 @@ buttonEnableAudio.addEventListener('click', async () => {
   } = result;
   initControls(scheduler, renderer);
 });
-},{"tone":"../node_modules/tone/build/Tone.js","./util/instruments":"util/instruments.js","./util/effects":"util/effects.js","./Scheduler":"Scheduler.js","./generators/SimpleGenerator":"generators/SimpleGenerator.js","./Renderer":"Renderer.js"}],"../../../Users/phili/AppData/Roaming/nvm/v10.13.0/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
-var global = arguments[3];
-var OVERLAY_ID = '__parcel__error__overlay__';
-var OldModule = module.bundle.Module;
-
-function Module(moduleName) {
-  OldModule.call(this, moduleName);
-  this.hot = {
-    data: module.bundle.hotData,
-    _acceptCallbacks: [],
-    _disposeCallbacks: [],
-    accept: function (fn) {
-      this._acceptCallbacks.push(fn || function () {});
-    },
-    dispose: function (fn) {
-      this._disposeCallbacks.push(fn);
-    }
-  };
-  module.bundle.hotData = null;
-}
-
-module.bundle.Module = Module;
-var checkedAssets, assetsToAccept;
-var parent = module.bundle.parent;
-
-if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
-  var hostname = "" || location.hostname;
-  var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "63785" + '/');
-
-  ws.onmessage = function (event) {
-    checkedAssets = {};
-    assetsToAccept = [];
-    var data = JSON.parse(event.data);
-
-    if (data.type === 'update') {
-      var handled = false;
-      data.assets.forEach(function (asset) {
-        if (!asset.isNew) {
-          var didAccept = hmrAcceptCheck(global.parcelRequire, asset.id);
-
-          if (didAccept) {
-            handled = true;
-          }
-        }
-      }); // Enable HMR for CSS by default.
-
-      handled = handled || data.assets.every(function (asset) {
-        return asset.type === 'css' && asset.generated.js;
-      });
-
-      if (handled) {
-        console.clear();
-        data.assets.forEach(function (asset) {
-          hmrApply(global.parcelRequire, asset);
-        });
-        assetsToAccept.forEach(function (v) {
-          hmrAcceptRun(v[0], v[1]);
-        });
-      } else {
-        window.location.reload();
-      }
-    }
-
-    if (data.type === 'reload') {
-      ws.close();
-
-      ws.onclose = function () {
-        location.reload();
-      };
-    }
-
-    if (data.type === 'error-resolved') {
-      console.log('[parcel] ✨ Error resolved');
-      removeErrorOverlay();
-    }
-
-    if (data.type === 'error') {
-      console.error('[parcel] 🚨  ' + data.error.message + '\n' + data.error.stack);
-      removeErrorOverlay();
-      var overlay = createErrorOverlay(data);
-      document.body.appendChild(overlay);
-    }
-  };
-}
-
-function removeErrorOverlay() {
-  var overlay = document.getElementById(OVERLAY_ID);
-
-  if (overlay) {
-    overlay.remove();
-  }
-}
-
-function createErrorOverlay(data) {
-  var overlay = document.createElement('div');
-  overlay.id = OVERLAY_ID; // html encode message and stack trace
-
-  var message = document.createElement('div');
-  var stackTrace = document.createElement('pre');
-  message.innerText = data.error.message;
-  stackTrace.innerText = data.error.stack;
-  overlay.innerHTML = '<div style="background: black; font-size: 16px; color: white; position: fixed; height: 100%; width: 100%; top: 0px; left: 0px; padding: 30px; opacity: 0.85; font-family: Menlo, Consolas, monospace; z-index: 9999;">' + '<span style="background: red; padding: 2px 4px; border-radius: 2px;">ERROR</span>' + '<span style="top: 2px; margin-left: 5px; position: relative;">🚨</span>' + '<div style="font-size: 18px; font-weight: bold; margin-top: 20px;">' + message.innerHTML + '</div>' + '<pre>' + stackTrace.innerHTML + '</pre>' + '</div>';
-  return overlay;
-}
-
-function getParents(bundle, id) {
-  var modules = bundle.modules;
-
-  if (!modules) {
-    return [];
-  }
-
-  var parents = [];
-  var k, d, dep;
-
-  for (k in modules) {
-    for (d in modules[k][1]) {
-      dep = modules[k][1][d];
-
-      if (dep === id || Array.isArray(dep) && dep[dep.length - 1] === id) {
-        parents.push(k);
-      }
-    }
-  }
-
-  if (bundle.parent) {
-    parents = parents.concat(getParents(bundle.parent, id));
-  }
-
-  return parents;
-}
-
-function hmrApply(bundle, asset) {
-  var modules = bundle.modules;
-
-  if (!modules) {
-    return;
-  }
-
-  if (modules[asset.id] || !bundle.parent) {
-    var fn = new Function('require', 'module', 'exports', asset.generated.js);
-    asset.isNew = !modules[asset.id];
-    modules[asset.id] = [fn, asset.deps];
-  } else if (bundle.parent) {
-    hmrApply(bundle.parent, asset);
-  }
-}
-
-function hmrAcceptCheck(bundle, id) {
-  var modules = bundle.modules;
-
-  if (!modules) {
-    return;
-  }
-
-  if (!modules[id] && bundle.parent) {
-    return hmrAcceptCheck(bundle.parent, id);
-  }
-
-  if (checkedAssets[id]) {
-    return;
-  }
-
-  checkedAssets[id] = true;
-  var cached = bundle.cache[id];
-  assetsToAccept.push([bundle, id]);
-
-  if (cached && cached.hot && cached.hot._acceptCallbacks.length) {
-    return true;
-  }
-
-  return getParents(global.parcelRequire, id).some(function (id) {
-    return hmrAcceptCheck(global.parcelRequire, id);
-  });
-}
-
-function hmrAcceptRun(bundle, id) {
-  var cached = bundle.cache[id];
-  bundle.hotData = {};
-
-  if (cached) {
-    cached.hot.data = bundle.hotData;
-  }
-
-  if (cached && cached.hot && cached.hot._disposeCallbacks.length) {
-    cached.hot._disposeCallbacks.forEach(function (cb) {
-      cb(bundle.hotData);
-    });
-  }
-
-  delete bundle.cache[id];
-  bundle(id);
-  cached = bundle.cache[id];
-
-  if (cached && cached.hot && cached.hot._acceptCallbacks.length) {
-    cached.hot._acceptCallbacks.forEach(function (cb) {
-      cb();
-    });
-
-    return true;
-  }
-}
-},{}]},{},["../../../Users/phili/AppData/Roaming/nvm/v10.13.0/node_modules/parcel-bundler/src/builtins/hmr-runtime.js","index.js"], null)
+},{"tone":"../node_modules/tone/build/Tone.js","./util/instruments":"util/instruments.js","./util/effects":"util/effects.js","./debug":"debug.js","./Scheduler":"Scheduler.js","./generators/SimpleGenerator":"generators/SimpleGenerator.js","./Renderer":"Renderer.js"}]},{},["index.js"], null)
 //# sourceMappingURL=/src.e31bb0bc.js.map
