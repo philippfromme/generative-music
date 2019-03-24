@@ -28,5 +28,21 @@ export function createMultiband() {
     low: {
       threshold: -12,
     },
+    mid: {
+      threshold: -12,
+    },
+    high: {
+      threshold: -12,
+    },
+  });
+}
+
+export function createCompressor() {
+  return new Tone.Compressor({
+    ratio: 10,
+    threshold: -24,
+    release: 0.05,
+    attack: 0.005,
+    knee: 6,
   });
 }

@@ -3,10 +3,12 @@ import Tone from 'tone';
 import { createSampler } from './util/instruments';
 
 import {
+  createCompressor,
   createDelay,
-  createMultiband,
   createReverb,
 } from './util/effects';
+
+import { initDebug } from './debug';
 
 import Scheduler from './Scheduler';
 import SimpleGenerator from './generators/SimpleGenerator';
@@ -36,9 +38,20 @@ async function initTone() {
 
   const reverb = await createReverb();
 
-  const multiband = createMultiband();
+  const compressor = createCompressor();
 
-  delay.chain(reverb, multiband, Tone.Master);
+  const gain = new Tone.Gain(12, Tone.Type.Decibel);
+
+  delay.chain(reverb, gain, compressor);
+
+  if (process.env.NODE_ENV === 'development') {
+
+    // setup debugging
+    const meter = initDebug();
+    compressor.fan(Tone.Master, meter);
+  } else {
+    compressor.connect(Tone.Master);
+  }
 
   // create instruments
   const violinHarmonics = await createSampler('violin-harmonics');

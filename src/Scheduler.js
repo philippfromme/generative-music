@@ -53,9 +53,11 @@ export default class Scheduler {
   scheduleEvent = ({
     length, instrument, note, time, velocity,
   }) => {
-    console.log(`schedule event for instrument ${instrument} (note: ${note}, length: ${length}, velocity: ${velocity}) at ${time.toBarsBeatsSixteenths()}`);
-
     Tone.Transport.scheduleOnce((t) => {
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[instrument ${instrument}] note: ${note}, length: ${length}, velocity: ${velocity}`);
+      }
 
       // note, duration, time, velocity
       this.instruments[instrument].triggerAttackRelease(note, length, t, velocity);
