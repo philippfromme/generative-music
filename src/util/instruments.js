@@ -5,6 +5,8 @@ import {
   Sampler,
 } from 'tone';
 
+import * as Range from 'tonal-range';
+
 export function createFMSynth() {
   return new FMSynth({
     harmonicity: 3,
@@ -60,27 +62,38 @@ export function createPolySynth() {
   });
 }
 
-const OCTAVES = {
-  piano: ['1', '2', '3', '4', '5'],
-  'violin-harmonics': ['3', '4', '5'],
-  'violin-staccato': ['3', '4', '5'],
-  'bass-harmonics': ['1', '2', '3'],
-  'bass-staccato': ['1', '2', '3'],
+function getNotes(octaves) {
+  const notes = [];
+
+  octaves.forEach((octave) => {
+    [ 'C', 'D#', 'F#', 'A' ].forEach((note) => {
+      notes.push(`${note}${octave}`);
+    });
+  });
+
+  return notes;
+}
+
+const NOTES = {
+  'piano': getNotes([ 1, 2, 3, 4, 5 ]),
+  'violin-harmonics': getNotes([ 3, 4, 5 ]),
+  'violin-staccato': getNotes([ 3, 4, 5 ]),
+  'bass-harmonics': getNotes([ 1, 2, 3 ]),
+  'bass-staccato': getNotes([ 1, 2, 3 ]),
+  'moog-bass': getNotes([ 1, 2, 3 ]),
+  'noisy-piano': getNotes([ 1, 2, 3, 4, 5 ]),
+  'noisy-violins': getNotes([ 3, 4, 5 ]),
+  'noisy-basses': getNotes([ 1, 2, 3 ]),
+  'noisy-hit': [ 'C3' ],
+  'noisy-hit-distorted': [ 'C3' ],
+  'modern-drum-kit': Range.chromatic([ 'C3', 'G5' ], true) // use sharps
 };
 
 export async function createSampler(preset = 'piano') {
-  const notes = ['C', 'D#', 'F#', 'A'];
-  const octaves = OCTAVES[preset];
+  const samples = {};
 
-  let samples = {};
-
-  notes.forEach((note) => {
-    octaves.forEach((octave) => {
-      samples = {
-        ...samples,
-        [`${note}${octave}`]: `samples/${preset}/${note.replace('#', 'sharp')}${octave}.mp3`,
-      };
-    });
+  NOTES[ preset ].forEach(note => {
+    samples[ note ] = `samples/${ preset }/${ note.replace('#', 'sharp') }.mp3`;
   });
 
   return new Promise((resolve) => {
@@ -88,7 +101,7 @@ export async function createSampler(preset = 'piano') {
       release: 1,
       onload: () => {
         resolve(sampler);
-      },
+      }
     });
   });
 }

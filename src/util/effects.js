@@ -1,8 +1,8 @@
 import Tone from 'tone';
 
-export async function createReverb() {
+export async function createReverb(decay = 7.5) {
   const reverb = new Tone.Reverb({
-    decay: 7.5,
+    decay,
     preDelay: 0.1,
   });
 
@@ -39,7 +39,7 @@ export function createMultiband() {
 
 export function createCompressor() {
   return new Tone.Compressor({
-    ratio: 10,
+    ratio: 5,
     threshold: -24,
     release: 0.05,
     attack: 0.005,

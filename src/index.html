@@ -1,40 +1,26 @@
 <html lang="en">
   <head>
-    <title>SOLARE</title>
+    <title>Generative Music</title>
     <meta name="viewport" content="width=device-width">
     <link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet">
     <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico"/>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
   </head>
   <body>
+    <div id="title" >An Infinite Piece of Generative Music</div>
+    <!-- <div id="canvas" class="animated pulse infinite slow"></div> -->
+    <div id="canvas"></div>
 
-    <!-- Title -->
-    <div id="title">
-      <p>SO</p>
-      <p>LA</p>
-      <p>RE</p>
-    </div>
-
-    <!-- Controls -->
     <div id="controls">
-        <button class="button inactive" id="button-play-pause">Play</button>
-        <button class="button inactive" id="button-info">Info</button>
+        <div class="pill pill-inverted pill-button inactive" id="button-start-stop">Play</div>
     </div>
 
-    <!-- Info -->
-    <div id="info" class="hidden">
-      <div class="icon"></div>
-      <h3>SOLARE (SOLAR FLARE)</h3>
-      <p>An endless piece of generative music by <a class="link" target="blank" href="https://github.com/philippfromme">Philipp Fromme</a>.
+    <div class="centered nowrap">
+      <div id="loader" class="pill hidden animated pulse infinite">Loading</div>
+      <div id="button-enable-audio" class="pill pill-button pill-inverted">Enable Audio</div>
     </div>
 
-    <!-- Loader -->
-    <div id="loader" class="overlay animation-pulse animation-infinite hidden">Loading</div>
-
-    <!-- Enable Audio -->
-    <button id="button-enable-audio">Enable Audio</button>
-
-    <!-- Script -->
     <script src="./index.js"></script>
   </body>
 </html>

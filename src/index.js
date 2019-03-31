@@ -1,180 +1,72 @@
 import Tone from 'tone';
 
-import { createSampler } from './util/instruments';
-
-import {
-  createCompressor,
-  createDelay,
-  createReverb,
-} from './util/effects';
-
-import { initDebug } from './debug';
-
-import Scheduler from './Scheduler';
-import SimpleGenerator from './generators/SimpleGenerator';
-
 import Renderer from './Renderer';
+
+import { createPiece } from './Piece';
 
 const getElementById = document.getElementById.bind(document);
 
-async function sleep(ms = 100) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
+const buttonEnableAudio = getElementById('button-enable-audio'),
+      buttonStartStop = getElementById('button-start-stop'),
+      loader = getElementById('loader');
+
+let piece = null;
+
+function ifSpace(callback) {
+  return function(event) {
+    if (event.keyCode === 32) {
+      callback();
+    }
+  }
 }
 
-const buttonEnableAudio = getElementById('button-enable-audio');
-const buttonInfo = getElementById('button-info');
-const buttonPlayPause = getElementById('button-play-pause');
-
-const info = getElementById('info');
-const loader = getElementById('loader');
-
-async function initTone() {
-  Tone.context.resume();
-
-  // create effects
-  const delay = createDelay();
-
-  const reverb = await createReverb();
-
-  const compressor = createCompressor();
-
-  const gain = new Tone.Gain(12, Tone.Type.Decibel);
-
-  delay.chain(reverb, gain, compressor);
-
-  if (process.env.NODE_ENV === 'development') {
-
-    // setup debugging
-    const meter = initDebug({
-      listeners: [
-        {
-          onChange: (value) => {
-            delay.wet.value = value;
-          },
-          initialValue: delay.wet.value,
-        },
-        {
-          onChange: (value) => {
-            reverb.wet.value = value;
-          },
-          initialValue: reverb.wet.value,
-        },
-      ],
-    });
-
-    compressor.fan(Tone.Master, meter);
-  } else {
-    compressor.connect(Tone.Master);
+function toggleStartStop() {
+  if (!piece) {
+    return;
   }
 
-  // create instruments
-  const violinHarmonics = await createSampler('piano');
-  const filter = new Tone.Filter(1000, 'lowpass');
-  violinHarmonics.chain(filter, delay);
+  if (piece.isStarted()) {
+    piece.stop();
 
-  const violinStaccato = await createSampler('violin-harmonics');
-  violinStaccato.connect(delay);
+    buttonStartStop.textContent = 'Start';
+  } else {
+    piece.start();
 
-  const bassHarmonics = await createSampler('bass-staccato');
-  bassHarmonics.connect(delay);
+    buttonStartStop.textContent = 'Stop';
+  }
+}
 
-  // create generator
-  const generator = new SimpleGenerator();
+async function init() {
+  Tone.context.resume();
 
   // create renderer
   const renderer = new Renderer();
 
-  // create scheduler
-  const scheduler = new Scheduler({
-    bpm: 110,
-    generator,
-    instruments: [
-      violinHarmonics,
-      bassHarmonics,
-      violinStaccato,
-    ],
-    renderer,
-  });
+  // create piece
+  piece = await createPiece(renderer);
 
-  return {
-    renderer,
-    scheduler,
-  };
-}
+  buttonStartStop.addEventListener('click', toggleStartStop);
 
-async function initControls(scheduler, renderer) {
-  buttonPlayPause.addEventListener('click', () => {
-    if (Tone.Transport.state === 'started') {
-      Tone.Transport.pause();
-
-      buttonPlayPause.textContent = 'Play';
-    } else {
-      scheduler.start();
-      renderer.start();
-
-      Tone.Transport.start();
-
-      buttonPlayPause.textContent = 'Pause';
-
-      buttonPlayPause.classList.remove('animation-pulse');
-    }
-  });
-
-  buttonInfo.addEventListener('click', (event) => {
-    info.classList.remove('hidden');
-
-    buttonInfo.classList.add('inactive');
-    buttonPlayPause.classList.add('inactive');
-
-    function hideInfo(e) {
-      if (e.target === info || info.contains(e.target)) {
-        return;
-      }
-
-      buttonInfo.classList.remove('inactive');
-      buttonPlayPause.classList.remove('inactive');
-
-      info.classList.add('hidden');
-
-      window.removeEventListener('click', hideInfo);
-    }
-
-    event.stopPropagation();
-
-    window.addEventListener('click', hideInfo);
-  });
-
-  await sleep(500);
-
-  loader.textContent = 'Ready';
-  loader.classList.add('ready');
-
-  await sleep(1000);
+  window.addEventListener('keydown', ifSpace(toggleStartStop));
 
   loader.classList.add('hidden');
 
-  await sleep(1000);
-
-  buttonInfo.classList.remove('inactive');
-  buttonPlayPause.classList.remove('inactive');
-  buttonPlayPause.classList.add('animation-pulse');
+  buttonStartStop.classList.remove('inactive');
+  buttonStartStop.classList.add('animated', 'pulse');
 }
 
-buttonEnableAudio.addEventListener('click', async () => {
-  buttonEnableAudio.classList.add('hidden');
+function enableAudioAndInit() {
+  window.removeEventListener('keydown', enableAudioAndInitIfSpace);
 
-  await sleep(500);
+  buttonEnableAudio.classList.add('hidden');
 
   loader.classList.remove('hidden');
 
-  const result = await initTone();
+  init();
+}
 
-  const {
-    renderer,
-    scheduler,
-  } = result;
+const enableAudioAndInitIfSpace = ifSpace(enableAudioAndInit);
 
-  initControls(scheduler, renderer);
-});
+buttonEnableAudio.addEventListener('click', enableAudioAndInit);
+
+window.addEventListener('keydown', enableAudioAndInitIfSpace);
