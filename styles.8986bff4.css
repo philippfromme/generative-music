@@ -1,0 +1,107 @@
+* {
+  box-sizing: border-box;
+  user-select: none;
+}
+
+html, body {
+  background-color: white;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  padding: 0;
+}
+
+.pill {
+  background-color: blue;
+  border: solid 2px blue;
+  border-radius: 12px;
+  box-shadow: 12px 12px 12px blue;
+  color: white;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 4px 12px;
+  text-align: center;
+  user-select: none;
+}
+
+.pill-white {
+  background-color: white;
+  border-color: white;
+  color: blue;
+}
+
+.pill-no-outline {
+  border-color: none;
+}
+
+.pill-inverted {
+  background-color: white;
+  border: solid 2px blue;
+  color: blue;
+}
+
+.pill-button {
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease-in-out;
+}
+
+.pill-button:hover {
+  box-shadow: 6px 6px 12px blue;
+}
+
+.centered {
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.inactive {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.hidden {
+  display: none;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.animation-bounce {
+  animation-fill-mode: both;
+  animation-iteration-count: infinite;
+  animation-name: bounce;
+}
+
+#title {
+  color: blue;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 12px;
+  font-weight: bold;
+  left: 0;
+  padding: 16px 12px;
+  text-align: center;
+  user-select: none;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  user-select: none;
+  width: 100%;
+}
+
+#controls {
+  bottom: 20px;
+  left: 50%;
+  position: absolute;
+  transform: translate(-50%);
+}
+
+#controls #button-play-pause {
+  min-width: 200px;
+}
+
+/*# sourceMappingURL=/styles.8986bff4.css.map */
