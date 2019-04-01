@@ -103672,33 +103672,57 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
+const chain = new _tone.default.CtrlMarkov({
+  0: [{
+    value: 0,
+    probability: 0.6
+  }, {
+    value: 1,
+    probability: 0.2
+  }, {
+    value: 2,
+    probability: 0.2
+  }],
+  1: [{
+    value: 0,
+    probability: 0.6
+  }, {
+    value: 2,
+    probability: 0.4
+  }],
+  2: [{
+    value: 1,
+    probability: 1
+  }]
+});
+
 async function createInstruments() {
   // create effects
   const delay = (0, _effects.createDelay)();
-  const reverbLong = await (0, _effects.createReverb)();
-  const reverbShort = await (0, _effects.createReverb)(1);
-  reverbShort.wet.value = 0.25;
+  const reverbLong = await (0, _effects.createReverb)(); // const reverbShort = await createReverb(1);
+  // reverbShort.wet.value = 0.25;
+
   const compressor = (0, _effects.createCompressor)();
-  const gain = new _tone.default.Gain(6, _tone.default.Type.Decibel);
-  reverbShort.connect(gain);
+  const gain = new _tone.default.Gain(6, _tone.default.Type.Decibel); // reverbShort.connect(gain);
+
   delay.chain(reverbLong, gain, compressor, _tone.default.Master); // create instruments
 
   const violins = await (0, _instruments.createSampler)('noisy-violins'),
-        piano = await (0, _instruments.createSampler)('noisy-piano'),
-        basses = await (0, _instruments.createSampler)('noisy-basses');
-  [violins, piano, basses].forEach(instrument => instrument.connect(delay));
+        // piano = await createSampler('noisy-piano'),
+  basses = await (0, _instruments.createSampler)('noisy-basses');
+  [violins, basses].forEach(instrument => instrument.connect(delay));
   const hit = await (0, _instruments.createSampler)('noisy-hit'),
         hitDistorted = await (0, _instruments.createSampler)('noisy-hit-distorted');
-  [hit, hitDistorted].forEach(instrument => instrument.connect(reverbLong));
-  const modernDrumKit = await (0, _instruments.createSampler)('modern-drum-kit');
-  modernDrumKit.connect(reverbShort);
+  [hit, hitDistorted].forEach(instrument => instrument.connect(delay)); // const modernDrumKit = await createSampler('modern-drum-kit');
+  // modernDrumKit.connect(reverbShort);
+
   return {
     violins,
-    piano,
+    // piano,
     basses,
     hit,
-    hitDistorted,
-    modernDrumKit
+    hitDistorted // modernDrumKit
+
   };
 }
 
@@ -103714,86 +103738,96 @@ class Piece {
         const position = _tone.default.Transport.position; // schedule ahead of time
 
         const bars = parseInt(position.split(':')[0]) + lookahead;
-        console.groupCollapsed(`[ ${position} ] schedule notes for [ ${[bars, 0, 0].join(':')} ]`); // console.log(position, bars);
+        console.group(`[ ${position} ] schedule notes for [ ${[bars, 0, 0].join(':')} ]`); // console.log(position, bars);
         // kick
+        // this.scheduleNotes([ 0, 8, 10 ].map((sixteents) => {
+        //   return {
+        //     instrument: 'modernDrumKit',
+        //     length: '4n',
+        //     time: [ bars, 0, sixteents ].join(':'),
+        //     velocity: 0.5
+        //   };
+        // }));
+        // snare
+        // this.scheduleNotes([ 4, 7, 12 ].map((sixteents) => {
+        //   return {
+        //     instrument: 'modernDrumKit',
+        //     length: '4n',
+        //     note: 'D#3',
+        //     time: [ bars, 0, sixteents ].join(':'),
+        //     velocity: 0.5
+        //   };
+        // }));
+        // if (chance()) {
+        //   this.scheduleNote({
+        //     instrument: 'modernDrumKit',
+        //     length: '4n',
+        //     note: 'D#3',
+        //     time: [ bars, 0, 15 ].join(':'),
+        //     velocity: 0.5
+        //   });
+        // }
+        // // hihat
+        // this.scheduleNotes([ 0, 2, 4, 6, 8, 10, 12, 14 ].map((sixteents) => {
+        //   return {
+        //     instrument: 'modernDrumKit',
+        //     length: '4n',
+        //     note: 'F#5',
+        //     time: [ bars, 0, sixteents ].join(':'),
+        //     velocity: 0.5
+        //   };
+        // }));
+        // // cymbal
+        // this.scheduleNote({
+        //   instrument: 'modernDrumKit',
+        //   length: '4n',
+        //   note: 'A#4',
+        //   time: [ bars, 0, 0 ].join(':'),
+        //   velocity: 0.5
+        // });
 
-        this.scheduleNotes([0, 8, 10].map(sixteents => {
-          return {
-            instrument: 'modernDrumKit',
-            length: '4n',
-            time: [bars, 0, sixteents].join(':'),
-            velocity: 0.5
-          };
-        })); // snare
-
-        this.scheduleNotes([4, 7, 12].map(sixteents => {
-          return {
-            instrument: 'modernDrumKit',
-            length: '4n',
-            note: 'D#3',
-            time: [bars, 0, sixteents].join(':'),
-            velocity: 0.5
-          };
-        }));
-
-        if ((0, _random.chance)()) {
-          this.scheduleNote({
-            instrument: 'modernDrumKit',
-            length: '4n',
-            note: 'D#3',
-            time: [bars, 0, 15].join(':'),
-            velocity: 0.5
-          });
-        } // hihat
-
-
-        this.scheduleNotes([0, 2, 4, 6, 8, 10, 12, 14].map(sixteents => {
-          return {
-            instrument: 'modernDrumKit',
-            length: '4n',
-            note: 'F#5',
-            time: [bars, 0, sixteents].join(':'),
-            velocity: 0.5
-          };
-        })); // cymbal
-
-        this.scheduleNote({
-          instrument: 'modernDrumKit',
-          length: '4n',
-          note: 'A#4',
-          time: [bars, 0, 0].join(':'),
-          velocity: 0.5
-        });
-
-        if ((0, _random.chance)()) {
-          this.scheduleNotes([{
-            note: 'C4',
-            sixteenths: 0
-          }, {
-            note: 'D#4',
-            sixteenths: 7
-          }].map(({
-            note,
-            sixteenths
-          }) => {
+        if ((0, _random.chance)(0.9)) {
+          const chords = [['A2', 'D3', 'E3'], ['C3', 'F3', 'A2'], ['D3', 'F3', 'A2']];
+          const index = chain.next();
+          console.log(`playing chord ${index} (${chords[index].join(', ')})`);
+          const chord = chords[index];
+          this.scheduleNotes(chord.map(note => {
             return {
               instrument: 'violins',
-              length: '2n',
-              note: note,
-              time: [bars, 0, sixteenths].join(':'),
-              velocity: 0.7
+              length: '2.',
+              note,
+              time: [bars, 0, 0].join(':'),
+              velocity: 0.5
             };
           })); // basses
 
-          this.scheduleNotes(['C2', 'D#2', 'G2'].map(note => {
-            return {
+          this.scheduleNote({
+            instrument: 'basses',
+            length: '2n',
+            note: chord[0],
+            time: [bars, 0, (0, _random.randomChoice)([0, 6])].join(':'),
+            velocity: 0.24
+          });
+
+          if ((0, _random.chance)(0.6)) {
+            this.scheduleNote({
               instrument: 'basses',
-              length: '4n',
-              note: note,
+              length: '2n',
+              note: (0, _tonal.transpose)(chord[0], '-8M'),
               time: [bars, 0, (0, _random.randomChoice)([0, 6])].join(':'),
-              velocity: 0.7
-            };
-          }));
+              velocity: 0.5
+            });
+          }
+
+          if ((0, _random.chance)(0.1)) {
+            this.scheduleNote({
+              instrument: 'hit',
+              length: '1m',
+              note: 'C3',
+              time: [bars, 0, (0, _random.randomChoice)([0, 6])].join(':'),
+              velocity: 0.5
+            });
+          }
         }
       };
 
@@ -103856,7 +103890,7 @@ class Piece {
     } = _options;
     this.instruments = instruments;
     this.renderer = renderer;
-    _tone.default.Transport.bpm.value = 90;
+    _tone.default.Transport.bpm.value = 70;
     this.key = (0, _tonal2.randomNote)('C2', 'B2');
   }
 
@@ -103879,6 +103913,8 @@ class Piece {
 }
 
 async function createPiece(renderer) {
+  // performance?
+  _tone.default.context.latencyHint = 'playback';
   const instruments = await createInstruments();
   const piece = new Piece({
     instruments,
